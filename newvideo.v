@@ -20,6 +20,7 @@ module newvideo (
 	
 	gensquares gensquares_inst (
 		.clk40(clk40),
+		.clk100(clk100),
 		.red(red),
 		.green(green),
 		.blue(blue),
