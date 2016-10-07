@@ -13,12 +13,15 @@ module gensquares (
 	wire [9:0] vPos;
 	wire nextFrameActive;
 	wire [9:0] nextVPos;
+	wire lineStarting, lineEnding;
 	
-	frameGenerator frameGenerator_inst (
+	frameGenerator #(.PIPELINE_DELAY(1)) frameGenerator_inst(
 		.clk40(clk40),
 		.hsync(hsync),
 		.vsync(vsync),
 		.videoActive(videoActive),
+		.lineStarting(lineStarting),
+		.lineEnding(lineEnding),
 		.hPos(hPos),
 		.vPos(vPos),
 		.nextFrameActive(nextFrameActive),
@@ -27,6 +30,7 @@ module gensquares (
 
 	reg [9:0] testCounter;
 	reg testAppend;
+	reg lineActive;
 	wire [15:0] fifoOut;
 	wire fifoEmpty, fifoFull;
 	
@@ -39,7 +43,7 @@ module gensquares (
 		
 		.rdclk(clk40),
 		.q(fifoOut),
-		.rdreq(videoActive & ~fifoEmpty),
+		.rdreq(lineActive & ~fifoEmpty),
 		.rdempty(fifoEmpty)
 	);
 
@@ -49,6 +53,7 @@ module gensquares (
 		testCounter = 0;
 		testAppend = 0;
 		fifoState = 0;
+		lineActive = 0;
 	end
 	
 	always @(posedge clk100) begin
@@ -73,6 +78,11 @@ module gensquares (
 	reg [15:0] tileRGB;
 
 	always @(posedge clk40) begin
+		if(lineStarting)
+			lineActive <= 1;
+		if(lineEnding)
+			lineActive <= 0;
+
 		if(videoActive & ~fifoEmpty) begin
 			tileRGB <= fifoOut;
 			//tileRGB <= (vPos < 10'd8) ? hPos : fifoOut;
