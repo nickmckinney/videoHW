@@ -1,8 +1,15 @@
-module frameGenerator (
+module frameGenerator #(
+	// can specify the video pipeline length to get enough advance notice via lineStarting and
+	// lineEnding so that the data is ready at the end of the pipe by the time it's needed
+	parameter PIPELINE_DELAY = 0
+)
+(
 	input clk40,
 	output reg hsync,
 	output reg vsync,
 	output videoActive,
+	output lineStarting,  // active for the one pixel just before the line starts
+	output lineEnding,    // active for the one pixel just before the line ends
 	output [9:0] hPos,
 	output [9:0] vPos,
 	output nextFrameActive,
@@ -46,6 +53,9 @@ module frameGenerator (
 	assign lineActive = (hposCount < HORIZ_VISIBLE);
 	assign frameActive = (vposCount < VERT_VISIBLE);
 	assign videoActive = lineActive & frameActive;
+	
+	assign lineStarting = (hposCount == HORIZ_END_LINE - PIPELINE_DELAY);
+	assign lineEnding = (hposCount == HORIZ_START_FRONT_PORCH - PIPELINE_DELAY);
 	
 	assign hPos = lineActive ? hposCount[9:0] : 10'h0;
 	assign vPos = frameActive ? vposCount : 9'h0;
