@@ -7,13 +7,14 @@ module newvideo (
 	output vsync
 );
 
-	wire clk40;
+	wire clk40, clk100;
 	wire locked;
 	
 	pll pll_inst (
 		.areset(0),
 		.inclk0(clk50),
 		.c0(clk40),
+		.c1(clk100),
 		.locked(locked)
 	);
 	
