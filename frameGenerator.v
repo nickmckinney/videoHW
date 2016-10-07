@@ -4,13 +4,15 @@ module frameGenerator (
 	output reg vsync,
 	output videoActive,
 	output [9:0] hPos,
-	output [9:0] vPos
+	output [9:0] vPos,
+	output nextFrameActive
 );
 
 	reg [10:0] hposCount;
 	reg [9:0] vposCount;
 	wire frameActive;
 	wire lineActive;
+	wire [9:0] nextVposCount;
 	
 	initial begin
 		hposCount <= 0;
@@ -26,14 +28,18 @@ module frameGenerator (
 	assign hPos = lineActive ? hposCount[9:0] : 10'h0;
 	assign vPos = frameActive ? vposCount : 9'h0;
 	
+	assign nextVposCount = vposCount == 10'd627 ? 0 : vposCount + 1;
+	assign nextFrameActive = (nextVposCount < 10'd600);
+	
 	always @(posedge clk40) begin
 		if(hposCount == 11'd1055) begin
 			hposCount <= 0;
-			if(vposCount == 10'd627) begin
-				vposCount <= 0;
-			end else begin
-				vposCount <= vposCount + 1;
-			end
+			vposCount <= nextVposCount;
+			//if(vposCount == 10'd627) begin
+			//	vposCount <= 0;
+			//end else begin
+			//	vposCount <= vposCount + 1;
+			//end
 			
 			if(vposCount == 10'd600) begin
 				vsync <= 1;

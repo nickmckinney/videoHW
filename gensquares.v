@@ -10,6 +10,7 @@ module gensquares (
 	wire videoActive;
 	wire [9:0] hPos;
 	wire [9:0] vPos;
+	wire nextFrameActive;
 	
 	frameGenerator frameGenerator_inst (
 		.clk40(clk40),
@@ -17,7 +18,8 @@ module gensquares (
 		.vsync(vsync),
 		.videoActive(videoActive),
 		.hPos(hPos),
-		.vPos(vPos)
+		.vPos(vPos),
+		.nextFrameActive(nextFrameActive)
 	);
 	
 	assign red   = (videoActive && hPos[4]) ? 4'hF : 4'h0;
