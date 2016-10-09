@@ -5,7 +5,16 @@ module gensquares (
 	output [3:0] green,
 	output [3:0] blue,
 	output hsync,
-	output vsync
+	output vsync,
+	
+	output reg [17:0] ram_addr,
+	input [15:0] ram_din,
+	output reg [15:0] ram_dout,
+	output reg ram_ce,
+	output reg ram_oe,
+	output reg ram_we,
+	output ram_lb,
+	output ram_hb
 );
 
 	wire videoActive;
@@ -37,7 +46,7 @@ module gensquares (
 	// fifo has a latency of 2 write cycles + 2 read cycles
 	dualFifo	dualFifo_inst (
 		.wrclk(clk100),
-		.data(testCounter + nextVPos),
+		.data(ram_din),           //(testCounter + nextVPos),
 		.wrreq(testAppend),
 		.wrfull(fifoFull),
 		
@@ -54,7 +63,20 @@ module gensquares (
 		testAppend = 0;
 		fifoState = 0;
 		lineActive = 0;
+		ram_ce = 1'b0;
+		ram_oe = 1'b0;
+		ram_we = 1'b0;
 	end
+	
+	wire [19:0] nextAddrOffset;
+	
+	multBy800 mult_inst (
+		.inNum(nextVPos),
+		.outNum(nextAddrOffset)
+	);
+	
+	assign ram_hb = 1'b1;
+	assign ram_lb = 1'b1;
 	
 	always @(posedge clk100) begin
 		case(fifoState)
@@ -62,6 +84,9 @@ module gensquares (
 				if(hsync & nextFrameActive) begin
 					fifoState <= 1;
 					testAppend <= 1;
+					ram_addr <= nextAddrOffset[17:0];
+					ram_ce <= 1;
+					ram_oe <= 1;
 				end
 			end
 			
@@ -70,7 +95,12 @@ module gensquares (
 					fifoState <= 0;
 					testAppend <= 0;
 					testCounter <= 0;
-				end else testCounter <= testCounter + 1;
+					ram_ce <= 0;
+					ram_oe <= 0;
+				end else begin
+					testCounter <= testCounter + 1;
+					ram_addr <= ram_addr + 1;
+				end
 			end
 		endcase
 	end
