@@ -91,8 +91,6 @@ module background (
 		endcase
 	end
 	
-	reg [15:0] tileRGB;
-
 	always @(posedge clk40) begin
 		pixelsActive <= lineActive;  // lags one cycle behind read request
 		
@@ -100,17 +98,10 @@ module background (
 			lineActive <= 1;
 		if(lineEnding)
 			lineActive <= 0;
-
-		if(lineActive & ~fifoEmpty) begin
-			tileRGB <= fifoOut;
-			//tileRGB <= (vPos < 10'd8) ? hPos : fifoOut;
-		end else begin
-			tileRGB <= 0;
-		end
 	end
 	
-	assign red   = pixelsActive ? tileRGB[3:0] : 4'h0;
-	assign green = pixelsActive ? tileRGB[7:4] : 4'h0;
-	assign blue  = pixelsActive ? tileRGB[11:8] : 4'h0;
+	assign red   = pixelsActive ? fifoOut[3:0] : 4'h0;
+	assign green = pixelsActive ? fifoOut[7:4] : 4'h0;
+	assign blue  = pixelsActive ? fifoOut[11:8] : 4'h0;
 
 endmodule
