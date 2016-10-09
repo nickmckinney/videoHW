@@ -44,7 +44,6 @@ module gensquares (
 		.green(green),
 		.blue(blue),
 		//.alpha,
-		.videoActive(videoActive),
 		.hsync(hsync),
 		.nextFrameActive(nextFrameActive),
 		.lineStarting(lineStarting),

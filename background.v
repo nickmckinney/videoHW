@@ -5,7 +5,6 @@ module background (
 	output [3:0] green,
 	output [3:0] blue,
 	output [3:0] alpha,
-	input videoActive,
 	input hsync,
 	input nextFrameActive,
 	input lineStarting,
@@ -25,6 +24,7 @@ module background (
 	reg [9:0] testCounter;
 	reg testAppend;
 	reg lineActive;
+	reg pixelsActive;
 	wire [15:0] fifoOut;
 	wire fifoEmpty, fifoFull;
 	
@@ -48,6 +48,7 @@ module background (
 		testAppend = 0;
 		fifoState = 0;
 		lineActive = 0;
+		pixelsActive = 0;
 		ram_ce = 1'b0;
 		ram_oe = 1'b0;
 		ram_we = 1'b0;
@@ -93,12 +94,14 @@ module background (
 	reg [15:0] tileRGB;
 
 	always @(posedge clk40) begin
+		pixelsActive <= lineActive;  // lags one cycle behind read request
+		
 		if(lineStarting)
 			lineActive <= 1;
 		if(lineEnding)
 			lineActive <= 0;
 
-		if(videoActive & ~fifoEmpty) begin
+		if(lineActive & ~fifoEmpty) begin
 			tileRGB <= fifoOut;
 			//tileRGB <= (vPos < 10'd8) ? hPos : fifoOut;
 		end else begin
@@ -106,8 +109,8 @@ module background (
 		end
 	end
 	
-	assign red   = videoActive ? tileRGB[3:0] : 4'h0;
-	assign green  = videoActive ? tileRGB[7:4] : 4'h0;
-	assign blue = videoActive ? tileRGB[11:8] : 4'h0;
+	assign red   = pixelsActive ? tileRGB[3:0] : 4'h0;
+	assign green = pixelsActive ? tileRGB[7:4] : 4'h0;
+	assign blue  = pixelsActive ? tileRGB[11:8] : 4'h0;
 
 endmodule
