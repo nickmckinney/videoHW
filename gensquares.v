@@ -7,12 +7,12 @@ module gensquares (
 	output hsync,
 	output vsync,
 	
-	output reg [17:0] ram_addr,
+	output [17:0] ram_addr,
 	input [15:0] ram_din,
-	output reg [15:0] ram_dout,
-	output reg ram_ce,
-	output reg ram_oe,
-	output reg ram_we,
+	output [15:0] ram_dout,
+	output ram_ce,
+	output ram_oe,
+	output ram_we,
 	output ram_lb,
 	output ram_hb
 );
@@ -37,93 +37,28 @@ module gensquares (
 		.nextVPos(nextVPos)
 	);
 
-	reg [9:0] testCounter;
-	reg testAppend;
-	reg lineActive;
-	wire [15:0] fifoOut;
-	wire fifoEmpty, fifoFull;
-	
-	// fifo has a latency of 2 write cycles + 2 read cycles
-	dualFifo	dualFifo_inst (
-		.wrclk(clk100),
-		.data(ram_din),           //(testCounter + nextVPos),
-		.wrreq(testAppend),
-		.wrfull(fifoFull),
-		
-		.rdclk(clk40),
-		.q(fifoOut),
-		.rdreq(lineActive & ~fifoEmpty),
-		.rdempty(fifoEmpty)
+	background background_inst (
+		.clk40(clk40),
+		.clk100(clk100),
+		.red(red),
+		.green(green),
+		.blue(blue),
+		//.alpha,
+		.videoActive(videoActive),
+		.hsync(hsync),
+		.nextFrameActive(nextFrameActive),
+		.lineStarting(lineStarting),
+		.lineEnding(lineEnding),
+		.nextVPos(nextVPos),
+
+		.ram_addr(ram_addr),
+		.ram_din(ram_din),
+		.ram_dout(ram_dout),
+		.ram_ce(ram_ce),
+		.ram_oe(ram_oe),
+		.ram_we(ram_we),
+		.ram_lb(ram_lb),
+		.ram_hb(ram_hb)
 	);
-
-	reg fifoState;
-	
-	initial begin
-		testCounter = 0;
-		testAppend = 0;
-		fifoState = 0;
-		lineActive = 0;
-		ram_ce = 1'b0;
-		ram_oe = 1'b0;
-		ram_we = 1'b0;
-	end
-	
-	wire [19:0] nextAddrOffset;
-	
-	multBy800 mult_inst (
-		.inNum(nextVPos),
-		.outNum(nextAddrOffset)
-	);
-	
-	assign ram_hb = 1'b1;
-	assign ram_lb = 1'b1;
-	
-	always @(posedge clk100) begin
-		case(fifoState)
-			0: begin
-				if(hsync & nextFrameActive) begin
-					fifoState <= 1;
-					testAppend <= 1;
-					ram_addr <= nextAddrOffset[17:0];
-					ram_ce <= 1;
-					ram_oe <= 1;
-				end
-			end
-			
-			1: begin
-				if(testCounter == 10'd799) begin
-					fifoState <= 0;
-					testAppend <= 0;
-					testCounter <= 0;
-					ram_ce <= 0;
-					ram_oe <= 0;
-				end else begin
-					testCounter <= testCounter + 1;
-					ram_addr <= ram_addr + 1;
-				end
-			end
-		endcase
-	end
-	
-	reg [15:0] tileRGB;
-
-	always @(posedge clk40) begin
-		if(lineStarting)
-			lineActive <= 1;
-		if(lineEnding)
-			lineActive <= 0;
-
-		if(videoActive & ~fifoEmpty) begin
-			tileRGB <= fifoOut;
-			//tileRGB <= (vPos < 10'd8) ? hPos : fifoOut;
-		end else begin
-			tileRGB <= 0;
-		end
-	end
-	
-	assign red   = videoActive ? tileRGB[3:0] : 4'h0;
-	assign green  = videoActive ? tileRGB[7:4] : 4'h0;
-	assign blue = videoActive ? tileRGB[11:8] : 4'h0;
-	//assign green = videoActive ? (vPos < 10'd8 && (hPos == 69 || hPos == 540) ? 4'b1111 : tileRGB[11:8]) : 4'h0;
 
 endmodule
