@@ -80,9 +80,12 @@ module frameGenerator #(
 			hposCount <= hposCount + 1;
 		end
 
+		if(hposCount == HORIZ_START_FRONT_PORCH) begin
+			nextVposCount <= vposCount == VERT_END_LINE ? 0 : vposCount + 1;
+		end
+
 		if(hposCount == HORIZ_START_SYNC) begin
 			hsync <= 1;
-			nextVposCount <= vposCount == VERT_END_LINE ? 0 : vposCount + 1;
 		end
 		
 		if(hposCount == HORIZ_START_BACK_PORCH) begin
