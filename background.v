@@ -31,7 +31,7 @@ module background (
 	// fifo has a latency of 2 write cycles + 2 read cycles
 	dualFifo	dualFifo_inst (
 		.wrclk(clk100),
-		.data(ram_din),
+		.data(toAppendToFIFO),
 		.wrreq(testAppend),
 		.wrfull(fifoFull),
 		
@@ -40,8 +40,6 @@ module background (
 		.rdreq(lineActive & ~fifoEmpty),
 		.rdempty(fifoEmpty)
 	);
-
-	reg fifoState;
 	
 	initial begin
 		testCounter = 0;
@@ -54,39 +52,88 @@ module background (
 		ram_we = 1'b0;
 	end
 	
-	wire [19:0] nextAddrOffset;
-	
-	multBy800 mult_inst (
-		.inNum(nextVPos),
-		.outNum(nextAddrOffset)
-	);
+	wire [17:0] nextAddrOffset;
+	assign nextAddrOffset = {4'b0, nextVPos[9:3], 7'b0};  // int(nextVPos / 8) * 128
 	
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
 	
+	// 0 - idle
+	// 1 - read character
+	// 2 - read tile word 0
+	// 3 - read tile word 1
+	// 4 - load pixels into FIFO (x8)
+	// 5 - wait state (temporary until I put together a more sophisticated state machine)
+	reg [2:0] fifoState;
+
+	reg [2:0] loadPxCount;
+	reg [8:0] tileId;
+	reg [15:0] toAppendToFIFO;
+	reg [17:0] charAddr;
+	
 	always @(posedge clk100) begin
 		case(fifoState)
 			0: begin
+				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
+				charAddr <= nextAddrOffset;
+				ram_addr <= nextAddrOffset;
 				if(hsync & nextFrameActive) begin
-					fifoState <= 1;
-					testAppend <= 1;
-					ram_addr <= nextAddrOffset[17:0];
+					fifoState <= 5;
+					//charAddr <= nextAddrOffset;
+					//ram_addr <= nextAddrOffset;
 					ram_ce <= 1;
 					ram_oe <= 1;
+					// testCounter is already reset to 0
 				end
 			end
 			
+			5: begin
+				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
+				fifoState <= 1;
+			end
+			
+			// character format:
+			//  xxxxxxxT TTTTTTTT
+			// T: tile number
 			1: begin
-				if(testCounter == 10'd799) begin
-					fifoState <= 0;
-					testAppend <= 0;
-					testCounter <= 0;
-					ram_ce <= 0;
-					ram_oe <= 0;
-				end else begin
-					testCounter <= testCounter + 1;
-					ram_addr <= ram_addr + 1;
+				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
+				
+				// calculate and set ram_addr
+				tileId <= ram_din[8:0];
+				fifoState <= 2;
+				//ram_addr <= 17'h0FFFF;
+			end
+			
+			2: begin
+				// capture tile word 0
+				// increment ram_addr
+				fifoState <= 3;
+			end
+			
+			3: begin
+				// capture tile word 1
+				fifoState <= 4;
+				loadPxCount <= 0;
+			end
+			
+			4: begin
+				if(loadPxCount == 7) begin
+					if(testCounter == 10'd99) begin
+						fifoState <= 0;
+						testCounter <= 0;
+						ram_ce <= 0;
+						ram_oe <= 0;
+					end else begin
+						fifoState <= 5;
+						testCounter <= testCounter + 1;
+						charAddr <= charAddr + 1;
+						ram_addr <= charAddr + 1;
+					end
 				end
+				
+				loadPxCount <= loadPxCount + 1;
+				testAppend <= 1;
+				toAppendToFIFO <= tileId;
 			end
 		endcase
 	end
