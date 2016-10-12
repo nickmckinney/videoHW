@@ -22,7 +22,7 @@ module gensquares (
 	wire [9:0] vPos;
 	wire nextFrameActive;
 	wire [9:0] nextVPos;
-	wire lineStarting, lineEnding;
+	wire lineStarting, lineEnding, hsyncStarting;
 	
 	frameGenerator #(.PIPELINE_DELAY(1)) frameGenerator_inst(
 		.clk40(clk40),
@@ -31,6 +31,7 @@ module gensquares (
 		.videoActive(videoActive),
 		.lineStarting(lineStarting),
 		.lineEnding(lineEnding),
+		.hsyncStarting(hsyncStarting),
 		.hPos(hPos),
 		.vPos(vPos),
 		.nextFrameActive(nextFrameActive),
@@ -44,7 +45,7 @@ module gensquares (
 		.green(green),
 		.blue(blue),
 		//.alpha,
-		.hsync(hsync),
+		.hsyncStarting(hsyncStarting),
 		.nextFrameActive(nextFrameActive),
 		.lineStarting(lineStarting),
 		.lineEnding(lineEnding),

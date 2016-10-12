@@ -10,6 +10,7 @@ module frameGenerator #(
 	output videoActive,
 	output lineStarting,  // active for the one pixel just before the line starts
 	output lineEnding,    // active for the one pixel just before the line ends
+	output hsyncStarting,
 	output [9:0] hPos,
 	output [9:0] vPos,
 	output nextFrameActive,
@@ -58,6 +59,7 @@ module frameGenerator #(
 	
 	assign lineStarting = (hposCount == HORIZ_END_LINE - PIPELINE_DELAY);
 	assign lineEnding = (hposCount == HORIZ_START_FRONT_PORCH - PIPELINE_DELAY);
+	assign hsyncStarting = (hposCount == HORIZ_START_SYNC - PIPELINE_DELAY);
 	
 	assign hPos = lineActive ? hposCount[9:0] : 10'h0;
 	assign vPos = frameActive ? vposCount : 9'h0;

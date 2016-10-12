@@ -5,7 +5,7 @@ module background (
 	output [3:0] green,
 	output [3:0] blue,
 	output [3:0] alpha,
-	input hsync,
+	input hsyncStarting,
 	input nextFrameActive,
 	input lineStarting,
 	input lineEnding,
@@ -77,7 +77,7 @@ module background (
 				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
 				charAddr <= nextAddrOffset;
 				ram_addr <= nextAddrOffset;
-				if(hsync & nextFrameActive) begin
+				if(hsyncStarting & nextFrameActive) begin
 					fifoState <= 5;
 					//charAddr <= nextAddrOffset;
 					//ram_addr <= nextAddrOffset;
