@@ -17,22 +17,22 @@ module frameGenerator #(
 	output [9:0] nextVPos
 );
 
-	localparam HSYNC_POLARITY_IS_POSITIVE = 1;
-	localparam HORIZ_VISIBLE = 11'd800;
-	localparam HORIZ_FRONT_PORCH = 11'd40;
-	localparam HORIZ_SYNC = 11'd128;
-	localparam HORIZ_BACK_PORCH = 11'd88;
+	localparam HSYNC_POLARITY_IS_POSITIVE = 0;
+	localparam HORIZ_VISIBLE = 11'd640;
+	localparam HORIZ_FRONT_PORCH = 11'd16;
+	localparam HORIZ_SYNC = 11'd96;
+	localparam HORIZ_BACK_PORCH = 11'd48;
 	localparam HORIZ_TOTAL = (HORIZ_VISIBLE + HORIZ_FRONT_PORCH + HORIZ_SYNC + HORIZ_BACK_PORCH);
 	localparam HORIZ_START_FRONT_PORCH = HORIZ_VISIBLE - 1;
 	localparam HORIZ_START_SYNC = HORIZ_START_FRONT_PORCH + HORIZ_FRONT_PORCH;
 	localparam HORIZ_START_BACK_PORCH = HORIZ_START_SYNC + HORIZ_SYNC;
 	localparam HORIZ_END_LINE = HORIZ_TOTAL - 1;
 	
-	localparam VSYNC_POLARITY_IS_POSITIVE = 1;
-	localparam VERT_VISIBLE = 10'd600;
-	localparam VERT_FRONT_PORCH = 10'd1;
-	localparam VERT_SYNC = 10'd4;
-	localparam VERT_BACK_PORCH = 10'd23;
+	localparam VSYNC_POLARITY_IS_POSITIVE = 0;
+	localparam VERT_VISIBLE = 10'd480;
+	localparam VERT_FRONT_PORCH = 10'd10;
+	localparam VERT_SYNC = 10'd2;
+	localparam VERT_BACK_PORCH = 10'd33;
 	localparam VERT_TOTAL = (VERT_VISIBLE + VERT_FRONT_PORCH + VERT_SYNC + VERT_BACK_PORCH);
 	localparam VERT_START_FRONT_PORCH = VERT_VISIBLE - 1;
 	localparam VERT_START_SYNC = VERT_START_FRONT_PORCH + VERT_FRONT_PORCH;
