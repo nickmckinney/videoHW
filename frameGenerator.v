@@ -16,6 +16,7 @@ module frameGenerator #(
 	output [9:0] nextVPos
 );
 
+	localparam HSYNC_POLARITY_IS_POSITIVE = 1;
 	localparam HORIZ_VISIBLE = 11'd800;
 	localparam HORIZ_FRONT_PORCH = 11'd40;
 	localparam HORIZ_SYNC = 11'd128;
@@ -26,6 +27,7 @@ module frameGenerator #(
 	localparam HORIZ_START_BACK_PORCH = HORIZ_START_SYNC + HORIZ_SYNC;
 	localparam HORIZ_END_LINE = HORIZ_TOTAL - 1;
 	
+	localparam VSYNC_POLARITY_IS_POSITIVE = 1;
 	localparam VERT_VISIBLE = 10'd600;
 	localparam VERT_FRONT_PORCH = 10'd1;
 	localparam VERT_SYNC = 10'd4;
@@ -46,8 +48,8 @@ module frameGenerator #(
 		hposCount <= 0;
 		vposCount <= 0;
 		nextVposCount <= 0;
-		hsync <= 0;
-		vsync <= 0;
+		hsync <= ~HSYNC_POLARITY_IS_POSITIVE;
+		vsync <= ~VSYNC_POLARITY_IS_POSITIVE;
 	end
 	
 	assign lineActive = (hposCount < HORIZ_VISIBLE);
@@ -70,11 +72,11 @@ module frameGenerator #(
 			vposCount <= nextVposCount;
 			
 			if(vposCount == VERT_START_SYNC) begin
-				vsync <= 1;
+				vsync <= VSYNC_POLARITY_IS_POSITIVE;
 			end
 			
 			if(vposCount == VERT_START_BACK_PORCH) begin
-				vsync <= 0;
+				vsync <= ~VSYNC_POLARITY_IS_POSITIVE;
 			end
 		end else begin
 			hposCount <= hposCount + 1;
@@ -85,11 +87,11 @@ module frameGenerator #(
 		end
 
 		if(hposCount == HORIZ_START_SYNC) begin
-			hsync <= 1;
+			hsync <= HSYNC_POLARITY_IS_POSITIVE;
 		end
 		
 		if(hposCount == HORIZ_START_BACK_PORCH) begin
-			hsync <= 0;
+			hsync <= ~HSYNC_POLARITY_IS_POSITIVE;
 		end
 	end
 endmodule
