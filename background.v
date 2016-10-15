@@ -53,7 +53,7 @@ module background (
 	end
 	
 	wire [17:0] nextAddrOffset;
-	assign nextAddrOffset = {4'b0, nextVPos[9:3], 7'b0};  // int(nextVPos / 8) * 128
+	assign nextAddrOffset = {5'b0, nextVPos[9:3], 6'b0};  // int(nextVPos / 8) * 64
 	
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
@@ -113,7 +113,7 @@ module background (
 			
 			4: begin
 				if(loadPxCount == 7) begin
-					if(testCounter == 10'd99) begin
+					if(testCounter == 10'd39) begin
 						fifoState <= 0;
 						testCounter <= 0;
 						ram_ce <= 0;

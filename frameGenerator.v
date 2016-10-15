@@ -18,10 +18,10 @@ module frameGenerator #(
 );
 
 	localparam HSYNC_POLARITY_IS_POSITIVE = 0;
-	localparam HORIZ_VISIBLE = 11'd640;
-	localparam HORIZ_FRONT_PORCH = 11'd16;
-	localparam HORIZ_SYNC = 11'd96;
-	localparam HORIZ_BACK_PORCH = 11'd48;
+	localparam HORIZ_VISIBLE = 11'd320;
+	localparam HORIZ_FRONT_PORCH = 11'd8;
+	localparam HORIZ_SYNC = 11'd48;
+	localparam HORIZ_BACK_PORCH = 11'd24;
 	localparam HORIZ_TOTAL = (HORIZ_VISIBLE + HORIZ_FRONT_PORCH + HORIZ_SYNC + HORIZ_BACK_PORCH);
 	localparam HORIZ_START_FRONT_PORCH = HORIZ_VISIBLE - 1;
 	localparam HORIZ_START_SYNC = HORIZ_START_FRONT_PORCH + HORIZ_FRONT_PORCH;
@@ -62,11 +62,11 @@ module frameGenerator #(
 	assign hsyncStarting = (hposCount == HORIZ_START_SYNC - PIPELINE_DELAY);
 	
 	assign hPos = lineActive ? hposCount[9:0] : 10'h0;
-	assign vPos = frameActive ? vposCount : 9'h0;
+	assign vPos = frameActive ? {1'b0, vposCount[9:1]} : 9'h0;
 	
 	assign nextFrameActive = (nextVposCount < VERT_VISIBLE);
 	
-	assign nextVPos = nextFrameActive ? nextVposCount : 9'h0;
+	assign nextVPos = nextFrameActive ? {1'b0, nextVposCount[9:1]} : 9'h0;
 	
 	always @(posedge clk40) begin
 		if(hposCount == (HORIZ_TOTAL - 1)) begin
