@@ -1,6 +1,6 @@
 module gensquares (
 	input clkPixel,
-	input clk100,
+	input clk,
 	output [3:0] red,
 	output [3:0] green,
 	output [3:0] blue,
@@ -40,7 +40,7 @@ module gensquares (
 
 	background background_inst (
 		.clkPixel(clkPixel),
-		.clk100(clk100),
+		.clk(clk),
 		.red(red),
 		.green(green),
 		.blue(blue),

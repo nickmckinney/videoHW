@@ -16,14 +16,14 @@ module newvideo (
 	output sram_hb_n
 );
 
-	wire clkPixel, clk100;
+	wire clkPixel, clk;
 	wire locked;
 	
 	pll pll_inst (
 		.areset(0),
 		.inclk0(clk50),
 		.c0(clkPixel),
-		.c1(clk100),
+		.c1(clk),
 		.locked(locked)
 	);
 	
@@ -46,7 +46,7 @@ module newvideo (
 
 	gensquares gensquares_inst (
 		.clkPixel(clkPixel),
-		.clk100(clk100),
+		.clk(clk),
 		.red(red),
 		.green(green),
 		.blue(blue),

@@ -1,6 +1,6 @@
 module background (
 	input clkPixel,
-	input clk100,
+	input clk,
 	output [3:0] red,
 	output [3:0] green,
 	output [3:0] blue,
@@ -30,7 +30,7 @@ module background (
 	
 	// fifo has a latency of 2 write cycles + 2 read cycles
 	dualFifo	dualFifo_inst (
-		.wrclk(clk100),
+		.wrclk(clk),
 		.data(toAppendToFIFO),
 		.wrreq(testAppend),
 		.wrfull(fifoFull),
@@ -71,7 +71,7 @@ module background (
 	reg [15:0] toAppendToFIFO;
 	reg [17:0] charAddr;
 	
-	always @(posedge clk100) begin
+	always @(posedge clk) begin
 		case(fifoState)
 			0: begin
 				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
