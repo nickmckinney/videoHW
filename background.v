@@ -78,18 +78,13 @@ module background (
 				charAddr <= nextAddrOffset;
 				ram_addr <= nextAddrOffset;
 				if(hsyncStarting & nextFrameActive) begin
-					fifoState <= 5;
+					fifoState <= 1;
 					//charAddr <= nextAddrOffset;
 					//ram_addr <= nextAddrOffset;
 					ram_ce <= 1;
 					ram_oe <= 1;
 					// testCounter is already reset to 0
 				end
-			end
-			
-			5: begin
-				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
-				fifoState <= 1;
 			end
 			
 			// character format:
@@ -124,7 +119,7 @@ module background (
 						ram_ce <= 0;
 						ram_oe <= 0;
 					end else begin
-						fifoState <= 5;
+						fifoState <= 1;
 						testCounter <= testCounter + 1;
 						charAddr <= charAddr + 1;
 						ram_addr <= charAddr + 1;
