@@ -1,5 +1,5 @@
 module gensquares (
-	input clk40,
+	input clkPixel,
 	input clk100,
 	output [3:0] red,
 	output [3:0] green,
@@ -25,7 +25,7 @@ module gensquares (
 	wire lineStarting, lineEnding, hsyncStarting;
 	
 	frameGenerator #(.PIPELINE_DELAY(1)) frameGenerator_inst(
-		.clk40(clk40),
+		.clkPixel(clkPixel),
 		.hsync(hsync),
 		.vsync(vsync),
 		.videoActive(videoActive),
@@ -39,7 +39,7 @@ module gensquares (
 	);
 
 	background background_inst (
-		.clk40(clk40),
+		.clkPixel(clkPixel),
 		.clk100(clk100),
 		.red(red),
 		.green(green),

@@ -4,7 +4,7 @@ module frameGenerator #(
 	parameter PIPELINE_DELAY = 0
 )
 (
-	input clk40,
+	input clkPixel,
 	output reg hsync,
 	output reg vsync,
 	output videoActive,
@@ -68,7 +68,7 @@ module frameGenerator #(
 	
 	assign nextVPos = nextFrameActive ? {1'b0, nextVposCount[9:1]} : 9'h0;
 	
-	always @(posedge clk40) begin
+	always @(posedge clkPixel) begin
 		if(hposCount == (HORIZ_TOTAL - 1)) begin
 			hposCount <= 0;
 			vposCount <= nextVposCount;

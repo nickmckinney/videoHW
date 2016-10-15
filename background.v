@@ -1,5 +1,5 @@
 module background (
-	input clk40,
+	input clkPixel,
 	input clk100,
 	output [3:0] red,
 	output [3:0] green,
@@ -35,7 +35,7 @@ module background (
 		.wrreq(testAppend),
 		.wrfull(fifoFull),
 		
-		.rdclk(clk40),
+		.rdclk(clkPixel),
 		.q(fifoOut),
 		.rdreq(lineActive & ~fifoEmpty),
 		.rdempty(fifoEmpty)
@@ -133,7 +133,7 @@ module background (
 		endcase
 	end
 	
-	always @(posedge clk40) begin
+	always @(posedge clkPixel) begin
 		pixelsActive <= lineActive;  // lags one cycle behind read request
 		
 		if(lineStarting)
