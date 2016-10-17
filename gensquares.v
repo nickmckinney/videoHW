@@ -24,7 +24,7 @@ module gensquares (
 	wire [9:0] nextVPos;
 	wire lineStarting, lineEnding, hsyncStarting;
 	
-	frameGenerator #(.PIPELINE_DELAY(1)) frameGenerator_inst(
+	frameGenerator #(.PIPELINE_DELAY(2)) frameGenerator_inst(
 		.clkPixel(clkPixel),
 		.hsync(hsync),
 		.vsync(vsync),

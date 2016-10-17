@@ -128,22 +128,38 @@ module background (
 				
 				loadPxCount <= loadPxCount + 1;
 				testAppend <= 1;
-				toAppendToFIFO <= tileId;
+				toAppendToFIFO <= {7'b0100000, tileId};
 			end
 		endcase
 	end
 	
+	reg [11:0] foo;
+	reg delayPixels;
 	always @(posedge clkPixel) begin
-		pixelsActive <= lineActive;  // lags one cycle behind read request
+		delayPixels <= lineActive;
+		pixelsActive <= delayPixels;  // lags two cycles behind read request (TODO: need a better way to have a configurable delay)
 		
-		if(lineStarting)
+		if(lineStarting) begin
 			lineActive <= 1;
-		if(lineEnding)
+			foo <= 0;
+		end else if(pixelsActive)
+			foo <= foo + 1;
+		
+		if(lineEnding) begin
 			lineActive <= 0;
+		end
 	end
 	
-	assign red   = pixelsActive ? fifoOut[3:0] : 4'h0;
-	assign green = pixelsActive ? fifoOut[7:4] : 4'h0;
-	assign blue  = pixelsActive ? fifoOut[11:8] : 4'h0;
+	wire [15:0] pixelOut;
+	alphaBlend blender (
+		.clk(clkPixel),
+		.composited({4'b1111, foo}),
+		.toAdd(fifoOut),
+		.out(pixelOut)
+	);
+	
+	assign red   = pixelsActive ? pixelOut[3:0] : 4'h0;
+	assign green = pixelsActive ? pixelOut[7:4] : 4'h0;
+	assign blue  = pixelsActive ? pixelOut[11:8] : 4'h0;
 
 endmodule
