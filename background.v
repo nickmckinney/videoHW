@@ -53,7 +53,7 @@ module background (
 	end
 	
 	wire [17:0] nextAddrOffset;
-	assign nextAddrOffset = {5'b0, nextVPos[9:3], 6'b0};  // int(nextVPos / 8) * 64
+	assign nextAddrOffset = {5'b00001, nextVPos[9:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x2000
 	
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
@@ -67,9 +67,11 @@ module background (
 	reg [2:0] fifoState;
 
 	reg [2:0] loadPxCount;
-	reg [8:0] tileId;
+	reg [15:0] tileData;
 	reg [15:0] toAppendToFIFO;
 	reg [17:0] charAddr;
+	
+	reg [31:0] pixelsToColor;
 	
 	always @(posedge clk) begin
 		case(fifoState)
@@ -94,19 +96,25 @@ module background (
 				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
 				
 				// calculate and set ram_addr
-				tileId <= ram_din[8:0];
+				tileData <= ram_din;
 				fifoState <= 2;
-				//ram_addr <= 17'h0FFFF;
+				ram_addr <= {5'b0, ram_din[8:0], nextVPos[2:0], 1'b0};
 			end
 			
 			2: begin
 				// capture tile word 0
+				pixelsToColor[31:16] <= ram_din;
+				
 				// increment ram_addr
+				ram_addr <= {5'b0, tileData[8:0], nextVPos[2:0], 1'b1};
+				
 				fifoState <= 3;
 			end
 			
 			3: begin
 				// capture tile word 1
+				pixelsToColor[15:0] <= ram_din;
+				
 				fifoState <= 4;
 				loadPxCount <= 0;
 			end
@@ -128,7 +136,8 @@ module background (
 				
 				loadPxCount <= loadPxCount + 1;
 				testAppend <= 1;
-				toAppendToFIFO <= {7'b0100000, tileId};
+				toAppendToFIFO <= {pixelsToColor[31:28], 12'hFFF};
+				pixelsToColor <= {pixelsToColor[27:0], 4'b0000};
 			end
 		endcase
 	end
