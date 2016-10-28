@@ -22,30 +22,59 @@ module background (
 	output ram_hb
 );
 
-	reg [9:0] testCounter;
+	wire [3:0] charAddrOut;
+	wire [3:0] charDataIn;
+	wire [3:0] palAddrOut;
+	wire [3:0] palDataIn;
+	wire [3:0] tileLowAddrOut;
+	wire [3:0] tileHighAddrOut;
+	wire [3:0] tileLowDataIn;
+	wire [3:0] tileHighDataIn;
+	wire [3:0] pixelOut;
+
+	backgroundControl bgControl (
+		.clk(clk),
+		.lineStarting(hsyncStarting & nextFrameActive),
+		.layer0Pan(4'b0),
+		.layer1Pan(4'b0),
+		.layer2Pan(4'b0),
+		.layer3Pan(4'b0),
+
+		.charAddrOut(charAddrOut),
+		.charDataIn(charDataIn),
+		.palAddrOut(palAddrOut),
+		.palDataIn(palDataIn),
+		.tileLowAddrOut(tileLowAddrOut),
+		.tileHighAddrOut(tileHighAddrOut),
+		.tileLowDataIn(tileLowDataIn),
+		.tileHighDataIn(tileHighDataIn),
+		.pixelOut(pixelOut)
+	);
+
 	reg testAppend;
 	reg lineActive;
 	reg pixelsActive;
-	wire [15:0] fifoOut;
+	wire [15:0] fifoOut[3:0];
 	wire fifoEmpty, fifoFull;
-	
+	reg [15:0] toAppendToFIFO[3:0];
+
 	// fifo has a latency of 2 write cycles + 2 read cycles
-	dualFifo	dualFifo_inst (
+	dualFifo	dualFifo_layer0 (
 		.wrclk(clk),
-		.data(toAppendToFIFO),
+		.data(toAppendToFIFO[0]),
 		.wrreq(testAppend),
 		.wrfull(fifoFull),
 		
 		.rdclk(clkPixel),
-		.q(fifoOut),
+		.q(fifoOut[0]),
 		.rdreq(lineActive & ~fifoEmpty),
 		.rdempty(fifoEmpty)
 	);
 	
 	initial begin
-		testCounter = 0;
+		//testCounter = 0;
 		testAppend = 0;
-		fifoState = 0;
+		//fifoState = 0;
 		lineActive = 0;
 		pixelsActive = 0;
 		ram_ce = 1'b0;
@@ -59,89 +88,37 @@ module background (
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
 	
-	// 0 - idle
-	// 1 - read character
-	// 2 - read tile word 0
-	// 3 - read tile word 1
-	// 4 - load pixels into FIFO (x8)
-	// 5 - wait state (temporary until I put together a more sophisticated state machine)
-	reg [2:0] fifoState;
-
-	reg [2:0] loadPxCount;
+	
 	reg [15:0] tileData;
-	reg [15:0] toAppendToFIFO;
 	reg [17:0] charAddr;
-	
 	reg [31:0] pixelsToColor;
-	
+
 	always @(posedge clk) begin
-		case(fifoState)
-			0: begin
-				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
-				charAddr <= nextAddrOffset;
-				ram_addr <= nextAddrOffset;
-				if(hsyncStarting & nextFrameActive) begin
-					fifoState <= 1;
-					//charAddr <= nextAddrOffset;
-					//ram_addr <= nextAddrOffset;
-					ram_ce <= 1;
-					ram_oe <= 1;
-					// testCounter is already reset to 0
-				end
-			end
+		if(hsyncStarting & nextFrameActive) charAddr <= nextAddrOffset;
+		else if(charDataIn[0]) charAddr <= charAddr + 1;  // TODO: not quite right, needs to wrap around when panning
+		
+		ram_ce <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
+		ram_oe <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
+		
+		ram_addr <= charAddrOut[0] ? charAddr :
+			tileLowAddrOut[0] ? {5'b0, tileData[8:0], nextVPos[2:0], 1'b0} :
+			tileHighAddrOut[0] ? {5'b0, tileData[8:0], nextVPos[2:0], 1'b1} :
+			18'b0;
 			
-			// character format:
-			//  xxxxxxxT TTTTTTTT
-			// T: tile number
-			1: begin
-				testAppend <= 0; // to save a cycle when exiting state 4, we'll do this here instead of having a state 5
-				
-				// calculate and set ram_addr
-				tileData <= ram_din;
-				fifoState <= 2;
-				ram_addr <= {5'b0, ram_din[8:0], nextVPos[2:0], 1'b0};
-			end
-			
-			2: begin
-				// capture tile word 0
-				pixelsToColor[31:16] <= ram_din;
-				
-				// increment ram_addr
-				ram_addr <= {5'b0, tileData[8:0], nextVPos[2:0], 1'b1};
-				
-				fifoState <= 3;
-			end
-			
-			3: begin
-				// capture tile word 1
-				pixelsToColor[15:0] <= ram_din;
-				
-				fifoState <= 4;
-				loadPxCount <= 0;
-			end
-			
-			4: begin
-				if(loadPxCount == 7) begin
-					if(testCounter == 10'd39) begin
-						fifoState <= 0;
-						testCounter <= 0;
-						ram_ce <= 0;
-						ram_oe <= 0;
-					end else begin
-						fifoState <= 1;
-						testCounter <= testCounter + 1;
-						charAddr <= charAddr + 1;
-						ram_addr <= charAddr + 1;
-					end
-				end
-				
-				loadPxCount <= loadPxCount + 1;
-				testAppend <= 1;
-				toAppendToFIFO <= {pixelsToColor[31:28], 12'hFFF};
+		if(charDataIn[0]) tileData <= ram_din;
+		
+		if(tileLowDataIn[0]) pixelsToColor[31:16] <= ram_din;
+		
+		testAppend <= pixelOut[0];
+		if(pixelOut[0]) begin
+			toAppendToFIFO[0] <= {pixelsToColor[31:28], 12'hFFF};
+			if(tileHighDataIn)
+				pixelsToColor <= {pixelsToColor[27:16], ram_din, 4'b0000};
+			else
 				pixelsToColor <= {pixelsToColor[27:0], 4'b0000};
-			end
-		endcase
+		end
 	end
+
 	
 	reg [11:0] foo;
 	reg delayPixels;
@@ -160,16 +137,16 @@ module background (
 		end
 	end
 	
-	wire [15:0] pixelOut;
+	wire [15:0] compPixelOut;
 	alphaBlend blender (
 		.clk(clkPixel),
 		.composited({4'b1111, foo}),
-		.toAdd(layersVisible[0] ? fifoOut : 16'h0000),
-		.out(pixelOut)
+		.toAdd(layersVisible[0] ? fifoOut[0] : 16'h0000),
+		.out(compPixelOut)
 	);
 	
-	assign red   = pixelsActive ? pixelOut[3:0] : 4'h0;
-	assign green = pixelsActive ? pixelOut[7:4] : 4'h0;
-	assign blue  = pixelsActive ? pixelOut[11:8] : 4'h0;
+	assign red   = pixelsActive ? compPixelOut[3:0] : 4'h0;
+	assign green = pixelsActive ? compPixelOut[7:4] : 4'h0;
+	assign blue  = pixelsActive ? compPixelOut[11:8] : 4'h0;
 
 endmodule
