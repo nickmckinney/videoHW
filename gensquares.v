@@ -14,7 +14,9 @@ module gensquares (
 	output ram_oe,
 	output ram_we,
 	output ram_lb,
-	output ram_hb
+	output ram_hb,
+	
+	input [3:0] layersVisible
 );
 
 	wire videoActive;
@@ -50,6 +52,7 @@ module gensquares (
 		.lineStarting(lineStarting),
 		.lineEnding(lineEnding),
 		.nextVPos(nextVPos),
+		.layersVisible(layersVisible),
 
 		.ram_addr(ram_addr),
 		.ram_din(ram_din),

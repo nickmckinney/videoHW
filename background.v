@@ -10,6 +10,7 @@ module background (
 	input lineStarting,
 	input lineEnding,
 	input [9:0] nextVPos,
+	input [3:0] layersVisible,
 
 	output reg [17:0] ram_addr,
 	input [15:0] ram_din,
@@ -163,7 +164,7 @@ module background (
 	alphaBlend blender (
 		.clk(clkPixel),
 		.composited({4'b1111, foo}),
-		.toAdd(fifoOut),
+		.toAdd(layersVisible[0] ? fifoOut : 16'h0000),
 		.out(pixelOut)
 	);
 	

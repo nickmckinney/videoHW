@@ -13,7 +13,9 @@ module newvideo (
 	output sram_oe_n,
 	output sram_we_n,
 	output sram_lb_n,
-	output sram_hb_n
+	output sram_hb_n,
+	
+	input [3:0] layersVisible
 );
 
 	wire clkPixel, clk;
@@ -60,7 +62,9 @@ module newvideo (
 		.ram_oe(sram_oe),
 		.ram_we(sram_we),
 		.ram_lb(sram_lb),
-		.ram_hb(sram_hb)
+		.ram_hb(sram_hb),
+		
+		.layersVisible(layersVisible)
 	);
 	
 endmodule
