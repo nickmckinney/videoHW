@@ -43,15 +43,53 @@ module backgroundControl (
 		.tileHighDataIn(tileHighDataIn[0]),
 		.pixelOut(pixelOut[0])
 	);
+
+	backgroundControlPipeline layer1 (
+		.clk(clk),
+		.panOffset(layer1Pan),
+		.lineStarting(startQueue[1:0] == 2'h1),
 	
-	assign charAddrOut[3:1] = 0;
-	assign charDataIn[3:1] = 0;
-	assign palAddrOut[3:1] = 0;
-	assign palDataIn[3:1] = 0;
-	assign tileLowAddrOut[3:1] = 0;
-	assign tileHighAddrOut[3:1] = 0;
-	assign tileLowDataIn[3:1] = 0;
-	assign tileHighDataIn[3:1] = 0;
-	assign pixelOut[3:1] = 0;
+		.charAddrOut(charAddrOut[1]),
+		.charDataIn(charDataIn[1]),
+		.palAddrOut(palAddrOut[1]),
+		.palDataIn(palDataIn[1]),
+		.tileLowAddrOut(tileLowAddrOut[1]),
+		.tileHighAddrOut(tileHighAddrOut[1]),
+		.tileLowDataIn(tileLowDataIn[1]),
+		.tileHighDataIn(tileHighDataIn[1]),
+		.pixelOut(pixelOut[1])
+	);
+
+	backgroundControlPipeline layer2 (
+		.clk(clk),
+		.panOffset(layer1Pan),
+		.lineStarting(startQueue[1:0] == 2'h2),
+	
+		.charAddrOut(charAddrOut[2]),
+		.charDataIn(charDataIn[2]),
+		.palAddrOut(palAddrOut[2]),
+		.palDataIn(palDataIn[2]),
+		.tileLowAddrOut(tileLowAddrOut[2]),
+		.tileHighAddrOut(tileHighAddrOut[2]),
+		.tileLowDataIn(tileLowDataIn[2]),
+		.tileHighDataIn(tileHighDataIn[2]),
+		.pixelOut(pixelOut[2])
+	);
+	
+	backgroundControlPipeline layer3 (
+		.clk(clk),
+		.panOffset(layer1Pan),
+		.lineStarting(startQueue[1:0] == 2'h3),
+	
+		.charAddrOut(charAddrOut[3]),
+		.charDataIn(charDataIn[3]),
+		.palAddrOut(palAddrOut[3]),
+		.palDataIn(palDataIn[3]),
+		.tileLowAddrOut(tileLowAddrOut[3]),
+		.tileHighAddrOut(tileHighAddrOut[3]),
+		.tileLowDataIn(tileLowDataIn[3]),
+		.tileHighDataIn(tileHighDataIn[3]),
+		.pixelOut(pixelOut[3])
+	);
 	
 endmodule

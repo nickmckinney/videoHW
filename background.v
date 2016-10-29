@@ -51,71 +51,121 @@ module background (
 		.pixelOut(pixelOut)
 	);
 
-	reg testAppend;
-	reg lineActive;
+	reg [3:0] fifoAppend;
+	reg [3:0] layerActive;
 	reg pixelsActive;
 	wire [15:0] fifoOut[3:0];
-	wire fifoEmpty, fifoFull;
+	wire [3:0] fifoEmpty;
+	wire [3:0] fifoFull;
 	reg [15:0] toAppendToFIFO[3:0];
 
 	// fifo has a latency of 2 write cycles + 2 read cycles
 	dualFifo	dualFifo_layer0 (
 		.wrclk(clk),
 		.data(toAppendToFIFO[0]),
-		.wrreq(testAppend),
-		.wrfull(fifoFull),
+		.wrreq(fifoAppend[0]),
+		.wrfull(fifoFull[0]),
 		
 		.rdclk(clkPixel),
 		.q(fifoOut[0]),
-		.rdreq(lineActive & ~fifoEmpty),
-		.rdempty(fifoEmpty)
+		.rdreq(layerActive[0] & ~fifoEmpty[0]),
+		.rdempty(fifoEmpty[0])
 	);
-	
+
+	dualFifo	dualFifo_layer1 (
+		.wrclk(clk),
+		.data(toAppendToFIFO[1]),
+		.wrreq(fifoAppend[1]),
+		.wrfull(fifoFull[1]),
+		
+		.rdclk(clkPixel),
+		.q(fifoOut[1]),
+		.rdreq(layerActive[1] & ~fifoEmpty[1]),
+		.rdempty(fifoEmpty[1])
+	);
+
+	dualFifo	dualFifo_layer2 (
+		.wrclk(clk),
+		.data(toAppendToFIFO[2]),
+		.wrreq(fifoAppend[2]),
+		.wrfull(fifoFull[2]),
+		
+		.rdclk(clkPixel),
+		.q(fifoOut[2]),
+		.rdreq(layerActive[2] & ~fifoEmpty[2]),
+		.rdempty(fifoEmpty[2])
+	);
+
+	dualFifo	dualFifo_layer3 (
+		.wrclk(clk),
+		.data(toAppendToFIFO[3]),
+		.wrreq(fifoAppend[3]),
+		.wrfull(fifoFull[3]),
+		
+		.rdclk(clkPixel),
+		.q(fifoOut[3]),
+		.rdreq(layerActive[3] & ~fifoEmpty[3]),
+		.rdempty(fifoEmpty[3])
+	);
+
 	initial begin
-		//testCounter = 0;
-		testAppend = 0;
-		//fifoState = 0;
-		lineActive = 0;
+		fifoAppend = 4'b0;
+		layerActive = 4'b0;
 		pixelsActive = 0;
 		ram_ce = 1'b0;
 		ram_oe = 1'b0;
 		ram_we = 1'b0;
 	end
 	
-	wire [17:0] nextAddrOffset;
-	assign nextAddrOffset = {5'b00001, nextVPos[9:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x2000
-	
+	wire [17:0] nextAddrOffset [3:0];
+	assign nextAddrOffset[0] = {6'b000010, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x2000
+	assign nextAddrOffset[1] = {6'b000011, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x3000
+	assign nextAddrOffset[2] = {6'b000100, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x4000
+	assign nextAddrOffset[3] = {6'b000101, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x5000
+
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
 	
 	
-	reg [15:0] tileData;
-	reg [17:0] charAddr;
-	reg [31:0] pixelsToColor;
+	reg [15:0] tileData [3:0];
+	reg [17:0] charAddr [3:0];
+	reg [31:0] pixelsToColor [3:0];
+	integer layer;
 
 	always @(posedge clk) begin
-		if(hsyncStarting & nextFrameActive) charAddr <= nextAddrOffset;
-		else if(charDataIn[0]) charAddr <= charAddr + 1;  // TODO: not quite right, needs to wrap around when panning
-		
 		ram_ce <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
 		ram_oe <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
 		
-		ram_addr <= charAddrOut[0] ? charAddr :
-			tileLowAddrOut[0] ? {5'b0, tileData[8:0], nextVPos[2:0], 1'b0} :
-			tileHighAddrOut[0] ? {5'b0, tileData[8:0], nextVPos[2:0], 1'b1} :
-			18'b0;
+		ram_addr <= charAddrOut[0] ? charAddr[0] :
+						charAddrOut[1] ? charAddr[1] :
+						charAddrOut[2] ? charAddr[2] :
+						charAddrOut[3] ? charAddr[3] :
+						tileLowAddrOut[0] ? {5'b0, tileData[0][8:0], nextVPos[2:0], 1'b0} :
+						tileLowAddrOut[1] ? {5'b0, tileData[1][8:0], nextVPos[2:0], 1'b0} :
+						tileLowAddrOut[2] ? {5'b0, tileData[2][8:0], nextVPos[2:0], 1'b0} :
+						tileLowAddrOut[3] ? {5'b0, tileData[3][8:0], nextVPos[2:0], 1'b0} :
+						tileHighAddrOut[0] ? {5'b0, tileData[0][8:0], nextVPos[2:0], 1'b1} :
+						tileHighAddrOut[1] ? {5'b0, tileData[1][8:0], nextVPos[2:0], 1'b1} :
+						tileHighAddrOut[2] ? {5'b0, tileData[2][8:0], nextVPos[2:0], 1'b1} :
+						tileHighAddrOut[3] ? {5'b0, tileData[3][8:0], nextVPos[2:0], 1'b1} :
+						18'b0;
+
+		for(layer = 0; layer < 4; layer = layer + 1) begin
+			charAddr[layer] <= (hsyncStarting & nextFrameActive) ? nextAddrOffset[layer] :
+								charDataIn[layer] ? (charAddr[layer] + 1) : charAddr[layer];  // TODO: not quite right, needs to wrap around when panning
+
+			if(charDataIn[layer]) tileData[layer] <= ram_din;
 			
-		if(charDataIn[0]) tileData <= ram_din;
-		
-		if(tileLowDataIn[0]) pixelsToColor[31:16] <= ram_din;
-		
-		testAppend <= pixelOut[0];
-		if(pixelOut[0]) begin
-			toAppendToFIFO[0] <= {pixelsToColor[31:28], 12'hFFF};
-			if(tileHighDataIn)
-				pixelsToColor <= {pixelsToColor[27:16], ram_din, 4'b0000};
-			else
-				pixelsToColor <= {pixelsToColor[27:0], 4'b0000};
+			if(tileLowDataIn[layer]) pixelsToColor[layer][31:16] <= ram_din;
+			
+			fifoAppend[layer] <= pixelOut[layer];
+			if(pixelOut[layer]) begin
+				toAppendToFIFO[layer] <= {pixelsToColor[layer][31:28], 12'hFFF};
+				if(tileHighDataIn[layer])
+					pixelsToColor[layer] <= {pixelsToColor[layer][27:20], ram_din, 8'h0};
+				else
+					pixelsToColor[layer] <= {pixelsToColor[layer][27:0], 4'b0000};
+			end
 		end
 	end
 
@@ -123,30 +173,49 @@ module background (
 	reg [11:0] foo;
 	reg delayPixels;
 	always @(posedge clkPixel) begin
-		delayPixels <= lineActive;
-		pixelsActive <= delayPixels;  // lags two cycles behind read request (TODO: need a better way to have a configurable delay)
-		
+		layerActive[3:1] <= layerActive[2:0];
+		delayPixels <= layerActive[3];
+		pixelsActive <= delayPixels;
+
 		if(lineStarting) begin
-			lineActive <= 1;
+			layerActive[0] <= 1;
 			foo <= 0;
 		end else if(pixelsActive)
 			foo <= foo + 1;
 		
 		if(lineEnding) begin
-			lineActive <= 0;
+			layerActive[0] <= 0;
 		end
 	end
 	
-	wire [15:0] compPixelOut;
-	alphaBlend blender (
+	wire [15:0] compPixelOut [3:0];
+	alphaBlend blender0 (
 		.clk(clkPixel),
-		.composited({4'b1111, foo}),
+		.composited({4'b1111, foo[11:4], ~foo[3:0]}),
 		.toAdd(layersVisible[0] ? fifoOut[0] : 16'h0000),
-		.out(compPixelOut)
+		.out(compPixelOut[0])
 	);
-	
-	assign red   = pixelsActive ? compPixelOut[3:0] : 4'h0;
-	assign green = pixelsActive ? compPixelOut[7:4] : 4'h0;
-	assign blue  = pixelsActive ? compPixelOut[11:8] : 4'h0;
+	alphaBlend blender1 (
+		.clk(clkPixel),
+		.composited(compPixelOut[0]),
+		.toAdd(layersVisible[1] ? fifoOut[1] : 16'h0000),
+		.out(compPixelOut[1])
+	);
+	alphaBlend blender2 (
+		.clk(clkPixel),
+		.composited(compPixelOut[1]),
+		.toAdd(layersVisible[2] ? fifoOut[2] : 16'h0000),
+		.out(compPixelOut[2])
+	);
+	alphaBlend blender3 (
+		.clk(clkPixel),
+		.composited(compPixelOut[2]),
+		.toAdd(layersVisible[3] ? fifoOut[3] : 16'h0000),
+		.out(compPixelOut[3])
+	);
+
+	assign red   = pixelsActive ? compPixelOut[3][3:0] : 4'h0;
+	assign green = pixelsActive ? compPixelOut[3][7:4] : 4'h0;
+	assign blue  = pixelsActive ? compPixelOut[3][11:8] : 4'h0;
 
 endmodule
