@@ -37,8 +37,8 @@ module backgroundControlPipeline (
 	assign palDataIn = live & cycle[3];
 	assign tileLowAddrOut = live & cycle[2];
 	assign tileLowDataIn = live & cycle[3];
-	assign tileHighAddrOut = live & cycle[3];
-	assign tileHighDataIn = live & cycle[4];
+	assign tileHighAddrOut = live & cycle[4];
+	assign tileHighDataIn = live & cycle[5];
 	assign pixelOut = live & (|cycle[11:4]);
 	
 endmodule
