@@ -16,6 +16,9 @@ module gensquares (
 	output ram_lb,
 	output ram_hb,
 	
+	output [2:0] palAddr,
+	input [255:0] palData,
+	
 	input [3:0] layersVisible
 );
 
@@ -61,7 +64,10 @@ module gensquares (
 		.ram_oe(ram_oe),
 		.ram_we(ram_we),
 		.ram_lb(ram_lb),
-		.ram_hb(ram_hb)
+		.ram_hb(ram_hb),
+		
+		.palAddr(palAddr),
+		.palData(palData),
 	);
 
 endmodule

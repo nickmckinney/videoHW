@@ -64,7 +64,20 @@ module newvideo (
 		.ram_lb(sram_lb),
 		.ram_hb(sram_hb),
 		
+		.palAddr(palAddr),
+		.palData(palOut),
+		
 		.layersVisible(layersVisible)
+	);
+	
+	wire [2:0] palAddr;
+	wire [255:0] palOut;
+	
+	paletteMemory paletteMemory_inst (
+		.clk(clk),
+		.addr(palAddr),
+		.we(1'b0),
+		.out(palOut)
 	);
 	
 endmodule

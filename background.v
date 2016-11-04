@@ -19,7 +19,10 @@ module background (
 	output reg ram_oe,
 	output reg ram_we,
 	output ram_lb,
-	output ram_hb
+	output ram_hb,
+	
+	output reg [2:0] palAddr,
+	input [255:0] palData
 );
 
 	wire [3:0] charAddrOut;
@@ -130,8 +133,63 @@ module background (
 	reg [15:0] tileData [3:0];
 	reg [17:0] charAddr [3:0];
 	reg [31:0] pixelsToColor [3:0];
+	reg [255:0] curPalette [3:0];
+	
 	integer layer;
 
+	/*
+	
+	character data:
+	
+	      V  H
+	      F  F [pal num][   which tile to draw   ]
+
+	F  E  D  C  B  A  9  8  7  6  5  4  3  2  1  0
+	
+	*/
+	
+	function [15:0] getColorFromPalette;
+		input [255:0] palette;
+		input [3:0] whichOne;
+		
+		begin
+			case(whichOne)
+				4'h0: getColorFromPalette = palette[15:0];
+				4'h1: getColorFromPalette = palette[31:16];
+				4'h2: getColorFromPalette = palette[47:32];
+				4'h3: getColorFromPalette = palette[63:48];
+				4'h4: getColorFromPalette = palette[79:64];
+				4'h5: getColorFromPalette = palette[95:80];
+				4'h6: getColorFromPalette = palette[111:96];
+				4'h7: getColorFromPalette = palette[127:112];
+				4'h8: getColorFromPalette = palette[143:128];
+				4'h9: getColorFromPalette = palette[159:144];
+				4'hA: getColorFromPalette = palette[175:160];
+				4'hB: getColorFromPalette = palette[191:176];
+				4'hC: getColorFromPalette = palette[207:192];
+				4'hD: getColorFromPalette = palette[223:208];
+				4'hE: getColorFromPalette = palette[239:224];
+				4'hF: getColorFromPalette = palette[255:240];
+				/*4'h0: getColorFromPalette = 16'hF000;
+				4'h1: getColorFromPalette = 16'hF007;
+				4'h2: getColorFromPalette = 16'hF070;
+				4'h3: getColorFromPalette = 16'hF077;
+				4'h4: getColorFromPalette = 16'hF700;
+				4'h5: getColorFromPalette = 16'hF707;
+				4'h6: getColorFromPalette = 16'hF770;
+				4'h7: getColorFromPalette = 16'hF777;
+				4'h8: getColorFromPalette = 16'hF444;
+				4'h9: getColorFromPalette = 16'hF00F;
+				4'hA: getColorFromPalette = 16'hF0F0;
+				4'hB: getColorFromPalette = 16'hF0FF;
+				4'hC: getColorFromPalette = 16'hFF00;
+				4'hD: getColorFromPalette = 16'hFF0F;
+				4'hE: getColorFromPalette = 16'hFFF0;
+				4'hF: getColorFromPalette = 16'hFFFF;*/
+			endcase
+		end
+	endfunction
+	
 	always @(posedge clk) begin
 		ram_ce <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
 		ram_oe <= |charAddrOut | |tileLowAddrOut | |tileHighAddrOut;
@@ -150,17 +208,20 @@ module background (
 						tileHighAddrOut[3] ? {5'b0, tileData[3][8:0], nextVPos[2:0], 1'b1} :
 						18'b0;
 
+		palAddr <= ram_din[11:9];
+
 		for(layer = 0; layer < 4; layer = layer + 1) begin
 			charAddr[layer] <= (hsyncStarting & nextFrameActive) ? nextAddrOffset[layer] :
 								charDataIn[layer] ? (charAddr[layer] + 1) : charAddr[layer];  // TODO: not quite right, needs to wrap around when panning
 
 			if(charDataIn[layer]) tileData[layer] <= ram_din;
-			
+			if(palDataIn[layer]) curPalette[layer] <= palData;
+
 			if(tileLowDataIn[layer]) pixelsToColor[layer][31:16] <= ram_din;
-			
+
 			fifoAppend[layer] <= pixelOut[layer];
 			if(pixelOut[layer]) begin
-				toAppendToFIFO[layer] <= {pixelsToColor[layer][31:28], 12'hFFF};
+				toAppendToFIFO[layer] <= getColorFromPalette(curPalette[layer], pixelsToColor[layer][31:28]);
 				if(tileHighDataIn[layer])
 					pixelsToColor[layer] <= {pixelsToColor[layer][27:20], ram_din, 8'h0};
 				else
@@ -192,6 +253,7 @@ module background (
 	alphaBlend blender0 (
 		.clk(clkPixel),
 		.composited({4'b1111, foo[11:4], ~foo[3:0]}),
+		//.composited(16'hF000),
 		.toAdd(layersVisible[0] ? fifoOut[0] : 16'h0000),
 		.out(compPixelOut[0])
 	);

@@ -33,7 +33,7 @@ module backgroundControlPipeline (
 	
 	assign charAddrOut = live & cycle[0];
 	assign charDataIn = live & cycle[1];
-	assign palAddrOut = live & cycle[2];
+	assign palAddrOut = live & cycle[1];
 	assign palDataIn = live & cycle[3];
 	assign tileLowAddrOut = live & cycle[2];
 	assign tileLowDataIn = live & cycle[3];
