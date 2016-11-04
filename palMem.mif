@@ -1,0 +1,152 @@
+-- Copyright (C) 1991-2013 Altera Corporation
+-- Your use of Altera Corporation's design tools, logic functions 
+-- and other software and tools, and its AMPP partner logic 
+-- functions, and any output files from any of the foregoing 
+-- (including device programming or simulation files), and any 
+-- associated documentation or information are expressly subject 
+-- to the terms and conditions of the Altera Program License 
+-- Subscription Agreement, Altera MegaCore Function License 
+-- Agreement, or other applicable license agreement, including, 
+-- without limitation, that your use is for the sole purpose of 
+-- programming logic devices manufactured by Altera and sold by 
+-- Altera or its authorized distributors.  Please refer to the 
+-- applicable agreement for further details.
+
+-- Quartus II generated Memory Initialization File (.mif)
+
+WIDTH=16;
+DEPTH=128;
+
+ADDRESS_RADIX=HEX;
+DATA_RADIX=HEX;
+
+CONTENT BEGIN
+	00  :   F000;
+	01  :   F007;
+	02  :   F070;
+	03  :   F077;
+	04  :   F700;
+	05  :   F707;
+	06  :   F770;
+	07  :   F777;
+	08  :   7000;
+	09  :   F00F;
+	0A  :   F0F0;
+	0B  :   F0FF;
+	0C  :   FF00;
+	0D  :   FF0F;
+	0E  :   FFF0;
+	0F  :   FFFF;
+	10  :   C000;
+	11  :   C007;
+	12  :   C070;
+	13  :   C077;
+	14  :   C700;
+	15  :   C707;
+	16  :   C770;
+	17  :   C777;
+	18  :   7000;
+	19  :   C00F;
+	1A  :   C0F0;
+	1B  :   C0FF;
+	1C  :   CF00;
+	1D  :   CF0F;
+	1E  :   CFF0;
+	1F  :   CFFF;
+	20  :   A000;
+	21  :   A007;
+	22  :   A070;
+	23  :   A077;
+	24  :   A700;
+	25  :   A707;
+	26  :   A770;
+	27  :   A777;
+	28  :   7000;
+	29  :   A00F;
+	2A  :   A0F0;
+	2B  :   A0FF;
+	2C  :   AF00;
+	2D  :   AF0F;
+	2E  :   AFF0;
+	2F  :   AFFF;
+	30  :   8000;
+	31  :   8007;
+	32  :   8070;
+	33  :   8077;
+	34  :   8700;
+	35  :   8707;
+	36  :   8770;
+	37  :   8777;
+	38  :   7000;
+	39  :   800F;
+	3A  :   80F0;
+	3B  :   80FF;
+	3C  :   8F00;
+	3D  :   8F0F;
+	3E  :   8FF0;
+	3F  :   8FFF;
+	40  :   6000;
+	41  :   6007;
+	42  :   6070;
+	43  :   6077;
+	44  :   6700;
+	45  :   6707;
+	46  :   6770;
+	47  :   6777;
+	48  :   7000;
+	49  :   600F;
+	4A  :   60F0;
+	4B  :   60FF;
+	4C  :   6F00;
+	4D  :   6F0F;
+	4E  :   6FF0;
+	4F  :   6FFF;
+	50  :   F000;
+	51  :   F007;
+	52  :   F070;
+	53  :   F077;
+	54  :   F700;
+	55  :   F707;
+	56  :   F770;
+	57  :   F777;
+	58  :   7000;
+	59  :   F00F;
+	5A  :   F0F0;
+	5B  :   F0FF;
+	5C  :   FF00;
+	5D  :   FF0F;
+	5E  :   FFF0;
+	5F  :   FFFF;
+	60  :   F000;
+	61  :   F007;
+	62  :   F070;
+	63  :   F077;
+	64  :   F700;
+	65  :   F707;
+	66  :   F770;
+	67  :   F777;
+	68  :   7000;
+	69  :   F00F;
+	6A  :   F0F0;
+	6B  :   F0FF;
+	6C  :   FF00;
+	6D  :   FF0F;
+	6E  :   FFF0;
+	6F  :   FFFF;
+	70  :   F000;
+	71  :   F007;
+	72  :   F070;
+	73  :   F077;
+	74  :   F700;
+	75  :   F707;
+	76  :   F770;
+	77  :   F777;
+	78  :   7000;
+	79  :   F00F;
+	7A  :   F0F0;
+	7B  :   F0FF;
+	7C  :   FF00;
+	7D  :   FF0F;
+	7E  :   FFF0;
+	7F  :   FFFF;
+END;
