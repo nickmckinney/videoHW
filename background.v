@@ -22,7 +22,12 @@ module background (
 	output ram_hb,
 	
 	output reg [2:0] palAddr,
-	input [255:0] palData
+	input [255:0] palData,
+	
+	input [8:0] pan0,
+	input [8:0] pan1,
+	input [8:0] pan2,
+	input [8:0] pan3
 );
 
 	wire [3:0] charAddrOut;
@@ -39,10 +44,10 @@ module background (
 	backgroundControl bgControl (
 		.clk(clk),
 		.lineStarting(hsyncStarting & nextFrameActive),
-		.layer0Pan(4'b0),
-		.layer1Pan(4'b0),
-		.layer2Pan(4'b0),
-		.layer3Pan(4'b0),
+		.layer0Pan(pan0[2:0]),
+		.layer1Pan(pan1[2:0]),
+		.layer2Pan(pan2[2:0]),
+		.layer3Pan(pan3[2:0]),
 
 		.charAddrOut(charAddrOut),
 		.charDataIn(charDataIn),
@@ -123,10 +128,10 @@ module background (
 	end
 	
 	wire [17:0] nextAddrOffset [3:0];
-	assign nextAddrOffset[0] = {6'b000010, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x2000
-	assign nextAddrOffset[1] = {6'b000011, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x3000
-	assign nextAddrOffset[2] = {6'b000100, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x4000
-	assign nextAddrOffset[3] = {6'b000101, nextVPos[8:3], 6'b0};  // int(nextVPos / 8) * 64 + 0x5000
+	assign nextAddrOffset[0] = {6'b000010, nextVPos[8:3], pan0[8:3]};  // int(nextVPos / 8) * 64 + 0x2000 + int(pan0 / 8)
+	assign nextAddrOffset[1] = {6'b000011, nextVPos[8:3], pan1[8:3]};  // int(nextVPos / 8) * 64 + 0x3000 + int(pan1 / 8)
+	assign nextAddrOffset[2] = {6'b000100, nextVPos[8:3], pan2[8:3]};  // int(nextVPos / 8) * 64 + 0x4000 + int(pan2 / 8)
+	assign nextAddrOffset[3] = {6'b000101, nextVPos[8:3], pan3[8:3]};  // int(nextVPos / 8) * 64 + 0x5000 + int(pan3 / 8)
 
 	assign ram_hb = 1'b1;
 	assign ram_lb = 1'b1;
@@ -198,7 +203,8 @@ module background (
 
 		for(layer = 0; layer < 4; layer = layer + 1) begin
 			charAddr[layer] <= (hsyncStarting & nextFrameActive) ? nextAddrOffset[layer] :
-								charDataIn[layer] ? (charAddr[layer] + 1) : charAddr[layer];  // TODO: not quite right, needs to wrap around when panning
+								charDataIn[layer] ? {charAddr[layer][17:6], (charAddr[layer][5:0] + 1'b1)} :   // wrap addr around when horiz tile 64 is reached
+								charAddr[layer];
 
 			if(charDataIn[layer]) tileData[layer] <= ram_din;
 			if(palDataIn[layer]) curPalette[layer] <= palData;

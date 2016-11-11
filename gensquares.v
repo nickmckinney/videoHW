@@ -27,7 +27,9 @@ module gensquares (
 	wire [9:0] vPos;
 	wire nextFrameActive;
 	wire [9:0] nextVPos;
-	wire lineStarting, lineEnding, hsyncStarting;
+	wire lineStarting, lineEnding, hsyncStarting, vsyncStarting;
+	
+	reg [8:0] pan0;
 	
 	frameGenerator #(.PIPELINE_DELAY(5)) frameGenerator_inst(
 		.clkPixel(clkPixel),
@@ -37,6 +39,7 @@ module gensquares (
 		.lineStarting(lineStarting),
 		.lineEnding(lineEnding),
 		.hsyncStarting(hsyncStarting),
+		.vsyncStarting(vsyncStarting),
 		.hPos(hPos),
 		.vPos(vPos),
 		.nextFrameActive(nextFrameActive),
@@ -68,6 +71,16 @@ module gensquares (
 		
 		.palAddr(palAddr),
 		.palData(palData),
+		
+		.pan0(pan0)
 	);
+	
+	initial begin
+		pan0 = 9'h0;
+	end
+	
+	always @(posedge clkPixel) begin
+		if(vsyncStarting) pan0 <= pan0 + 1;
+	end
 
 endmodule
