@@ -1,6 +1,6 @@
 module backgroundControlPipeline (
 	input clk,
-	input [3:0] panOffset,
+	input [2:0] panOffset,
 	input lineStarting,
 	
 	output charAddrOut,

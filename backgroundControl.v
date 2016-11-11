@@ -1,10 +1,10 @@
 module backgroundControl (
 	input clk,
 	input lineStarting,
-	input [4:0] layer0Pan,
-	input [4:0] layer1Pan,
-	input [4:0] layer2Pan,
-	input [4:0] layer3Pan,
+	input [2:0] layer0Pan,
+	input [2:0] layer1Pan,
+	input [2:0] layer2Pan,
+	input [2:0] layer3Pan,
 
 	output [3:0] charAddrOut,
 	output [3:0] charDataIn,
@@ -62,7 +62,7 @@ module backgroundControl (
 
 	backgroundControlPipeline layer2 (
 		.clk(clk),
-		.panOffset(layer1Pan),
+		.panOffset(layer2Pan),
 		.lineStarting(startQueue[1:0] == 2'h2),
 	
 		.charAddrOut(charAddrOut[2]),
@@ -78,7 +78,7 @@ module backgroundControl (
 	
 	backgroundControlPipeline layer3 (
 		.clk(clk),
-		.panOffset(layer1Pan),
+		.panOffset(layer3Pan),
 		.lineStarting(startQueue[1:0] == 2'h3),
 	
 		.charAddrOut(charAddrOut[3]),
