@@ -14,7 +14,8 @@ module backgroundControl (
 	output [3:0] tileHighAddrOut,
 	output [3:0] tileLowDataIn,
 	output [3:0] tileHighDataIn,
-	output [3:0] pixelOut
+	output [3:0] pixelOut,
+	output [3:0] pixelMask  // 1 if pixel should be kept, 0 if pixel should be thrown out (not added to pipeline)
 );
 
 	reg [13:0] startQueue;
@@ -41,7 +42,8 @@ module backgroundControl (
 		.tileHighAddrOut(tileHighAddrOut[0]),
 		.tileLowDataIn(tileLowDataIn[0]),
 		.tileHighDataIn(tileHighDataIn[0]),
-		.pixelOut(pixelOut[0])
+		.pixelOut(pixelOut[0]),
+		.pixelMask(pixelMask[0])
 	);
 
 	backgroundControlPipeline layer1 (
@@ -57,7 +59,8 @@ module backgroundControl (
 		.tileHighAddrOut(tileHighAddrOut[1]),
 		.tileLowDataIn(tileLowDataIn[1]),
 		.tileHighDataIn(tileHighDataIn[1]),
-		.pixelOut(pixelOut[1])
+		.pixelOut(pixelOut[1]),
+		.pixelMask(pixelMask[1])
 	);
 
 	backgroundControlPipeline layer2 (
@@ -73,7 +76,8 @@ module backgroundControl (
 		.tileHighAddrOut(tileHighAddrOut[2]),
 		.tileLowDataIn(tileLowDataIn[2]),
 		.tileHighDataIn(tileHighDataIn[2]),
-		.pixelOut(pixelOut[2])
+		.pixelOut(pixelOut[2]),
+		.pixelMask(pixelMask[2])
 	);
 	
 	backgroundControlPipeline layer3 (
@@ -89,7 +93,8 @@ module backgroundControl (
 		.tileHighAddrOut(tileHighAddrOut[3]),
 		.tileLowDataIn(tileLowDataIn[3]),
 		.tileHighDataIn(tileHighDataIn[3]),
-		.pixelOut(pixelOut[3])
+		.pixelOut(pixelOut[3]),
+		.pixelMask(pixelMask[3])
 	);
 	
 endmodule
