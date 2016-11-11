@@ -18,6 +18,11 @@ module backgroundControlPipeline (
 	reg [6:0] tileCount;
 	reg live;
 	
+	wire isFirstTile, isExtraTile, isStopTile;
+	assign isStopTile = tileCount == (|panOffset ? 7'd41 : 7'd40);
+	assign isExtraTile = tileCount == 7'd40;
+	assign isFirstTile = tileCount == 7'd0;
+
 	always @(posedge clk) begin
 		if(lineStarting) begin
 			live <= 1;
@@ -27,7 +32,7 @@ module backgroundControlPipeline (
 			cycle <= live ? {cycle[10:0], cycle[11]} : 12'b0;  // barrel shift
 			
 			if(cycle[11]) tileCount <= tileCount + 1;
-			if(tileCount == (|panOffset ? 7'd41 : 7'd40)) live <= 0;  // should be 41 and 40
+			if(isStopTile) live <= 0;  // should be 41 and 40
 		end
 	end
 	
