@@ -34,6 +34,7 @@ module background (
 	wire [3:0] tileLowDataIn;
 	wire [3:0] tileHighDataIn;
 	wire [3:0] pixelOut;
+	wire [3:0] pixelMask;
 
 	backgroundControl bgControl (
 		.clk(clk),
@@ -51,7 +52,8 @@ module background (
 		.tileHighAddrOut(tileHighAddrOut),
 		.tileLowDataIn(tileLowDataIn),
 		.tileHighDataIn(tileHighDataIn),
-		.pixelOut(pixelOut)
+		.pixelOut(pixelOut),
+		.pixelMask(pixelMask)
 	);
 
 	reg [3:0] fifoAppend;
@@ -203,7 +205,7 @@ module background (
 
 			if(tileLowDataIn[layer]) pixelsToColor[layer][31:16] <= ram_din;
 
-			fifoAppend[layer] <= pixelOut[layer];
+			fifoAppend[layer] <= pixelOut[layer] & pixelMask[layer];
 			if(pixelOut[layer]) begin
 				toAppendToFIFO[layer] <= getColorFromPalette(curPalette[layer], pixelsToColor[layer][31:28]);
 				if(tileHighDataIn[layer])
