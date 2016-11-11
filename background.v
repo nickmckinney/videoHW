@@ -170,22 +170,6 @@ module background (
 				4'hD: getColorFromPalette = palette[223:208];
 				4'hE: getColorFromPalette = palette[239:224];
 				4'hF: getColorFromPalette = palette[255:240];
-				/*4'h0: getColorFromPalette = 16'hF000;
-				4'h1: getColorFromPalette = 16'hF007;
-				4'h2: getColorFromPalette = 16'hF070;
-				4'h3: getColorFromPalette = 16'hF077;
-				4'h4: getColorFromPalette = 16'hF700;
-				4'h5: getColorFromPalette = 16'hF707;
-				4'h6: getColorFromPalette = 16'hF770;
-				4'h7: getColorFromPalette = 16'hF777;
-				4'h8: getColorFromPalette = 16'hF444;
-				4'h9: getColorFromPalette = 16'hF00F;
-				4'hA: getColorFromPalette = 16'hF0F0;
-				4'hB: getColorFromPalette = 16'hF0FF;
-				4'hC: getColorFromPalette = 16'hFF00;
-				4'hD: getColorFromPalette = 16'hFF0F;
-				4'hE: getColorFromPalette = 16'hFFF0;
-				4'hF: getColorFromPalette = 16'hFFFF;*/
 			endcase
 		end
 	endfunction
